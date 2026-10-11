@@ -52,6 +52,16 @@ main{max-width:1200px;margin:0 auto;padding:20px 16px 64px}
 .team-green{--table:#1d6b3f;--table-2:#2a8a52}
 .team-red{--table:#9b2a22;--table-2:#bf3a2f}
 @media (prefers-color-scheme:dark){.team-green{--table:#17512f;--table-2:#22723f}.team-red{--table:#6e1f19;--table-2:#93302a}}
+.teamtabs{display:none}
+@media (max-width:860px){
+  .teamtabs{display:flex;gap:8px;position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0 10px;margin:0 0 4px}
+  .teamtabs button{flex:1;border:2px solid var(--rule);background:var(--paper);border-radius:999px;padding:10px 12px;font-weight:700;cursor:pointer;min-height:44px}
+  .teamtabs button[aria-selected="true"].t-green{background:#1d6b3f;border-color:#1d6b3f;color:#fff}
+  .teamtabs button[aria-selected="true"].t-red{background:#9b2a22;border-color:#9b2a22;color:#fff}
+  .cols[data-show] .col{display:none}
+  .cols[data-show="div5"] .col[data-key="div5"],.cols[data-show="div7"] .col[data-key="div7"]{display:block}
+  .cols .colhead{position:static}
+}
 .colhead{background:var(--table);color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 12px;position:sticky;top:0;z-index:3}
 .colhead h2{font:800 1.7rem/1 "Barlow Condensed",sans-serif;margin:0}
 .colhead p{margin:4px 0 0;font-size:.88rem;opacity:.88}
@@ -127,17 +137,18 @@ footer{max-width:1200px;margin:0 auto;padding:0 16px 40px;color:var(--muted);fon
     <label class="toggle"><input type="checkbox" id="showPast"> Visa spelade matcher</label>
   </div>
 
+  <div class="teamtabs" id="teamtabs" role="tablist" aria-label="Välj lag"></div>
   <div class="cols" id="cols"></div>
 </main>
 <footer>Tider, hallar och ansvariga kommer från serieindelningen 17 sept 2026.</footer>
 
 <script>
 // Klistra in webbappens adress från Apps Script (slutar på /exec):
-const API = "https://script.google.com/macros/s/AKfycbwD2GNAHA6AYsk_37-vAFE5Srx42pwnCPgS4CMTaZkusY2Pv6cwTduSqZtgHm0ISeqJuw/exec";
+const API = "https://script.google.com/macros/s/AKfycbzlT6PTXEpNXZY3G4fn2LgZnWm9uY8UJj3KuadBq4NCqkYOLlygtm9cr3EdXB24lF8iPw/exec";
 
 // Ögonblicksbild av lag och matcher så att schemat syns direkt. Backend (Code.gs) är det som gäller och skriver över detta.
-const SNAPSHOT = {"div5":{"label":"A-laget","title":"Division 5 södra","team":"Jarlabergs BTK","color":"green","needed":3,"homeDay":"tisdagar","players":["Mikael S","Stefan S","Stefan O","Gustav","Jesper","Magnus","Håkan"],"extras":["Annan spelare"],"matches":[["m01","2026-10-11","Boo RK D",false,"18:30","Boo KFUM:s rackethall, Mensättrav. 36, Saltsjö-Boo","Stefan Blomstrand"],["m02","2026-10-13","Norrtulls SK E",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m03","2026-10-23","Tyresö BTK C",false,"19:00","Skrubbahallen, Skrubba Allé, Tyresö","Jonas Strömsjö"],["m04","2026-11-10","Ingarö IF B",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m05","2026-11-22","Spårvägens BTK G",false,"19:00","Sporthallen, Tellusborgsvägen 22, Hägersten","Kansliet, 08-19 92 97"],["m06","2026-12-02","Tullinge TP BTK C",false,"19:00","Rikstenshallen, Flygarvägen 3, Tullinge","Peter Ottosson"],["m07","2026-12-08","Djurgårdens IF BTF",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m08","2027-01-12","Boo RK D",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m09","2027-01-24","Norrtulls SK E",false,"15:30","Vasa Real, Hälsingegatan 15, Stockholm","Caroline Johansson"],["m10","2027-02-02","Tyresö BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m11","2027-02-14","Ingarö IF B",false,"15:30","Ingarö sporthall ”Skeppet”, Eknäsvägen 2","Monica Lyander"],["m12","2027-02-23","Spårvägens BTK G",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m13","2027-03-16","Tullinge TP BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m14","2027-03-23","Djurgårdens IF BTF",false,"19:15","GIH-hallen, Lidingövägen 1, Stockholm","Tommi Riihonen"]]},"div7":{"label":"B-laget","title":"Division 7 MA","team":"Jarlabergs BTK B1","color":"red","needed":3,"homeDay":"torsdagar","players":["Anders","Fredrik","Niklas","Antonio","Martin","Jorge"],"extras":["A-lagsspelare","Annan spelare"],"matches":[["m01","2026-10-11","Djurgårdens IF BTF C2",false,"12:30","GIH-hallen, Lidingövägen 1, Stockholm","Tommi Riihonen"],["m02","2026-10-15","Hammarby IF BTF F3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m03","2026-10-20","IFK Lidingö BTK C",false,"19:30","Hersbyhallen, Läroverksvägen 17, Lidingö","Tony Arosell"],["m04","2026-11-12","Solna BTK D3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m05","2026-11-20","Spånga TBK C",false,"18:00","Spånga Tennis o Bordtennishall, Kronofogdev. 46–48, Spånga","Kenneth Karlsson"],["m06","2026-12-03","Ängby SK G1",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m07","2026-12-13","IFK Täby BTK D3",false,"18:00","Tibblehallen, Täby","Karen Chen"],["m08","2027-01-14","Djurgårdens IF BTF C2",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m09","2027-01-24","Hammarby IF BTF F3",false,"15:30","Farstahallen","Joel Keiler"],["m10","2027-02-04","IFK Lidingö BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m11","2027-02-12","Solna BTK D3",false,"19:15","Vasalundshallen, Badhusplan 3, Solna","Torbjörn Andersson"],["m12","2027-02-25","Spånga TBK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m13","2027-03-19","Ängby SK G1",false,"18:15","Ulvsunda idrottscentrum, Bryggerivägen, Bromma","Engla Palmgren"],["m14","2027-03-25","IFK Täby BTK D3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"]]}};
-const CACHE_KEY = "jbtk-cache-v1";
+const SNAPSHOT = {"div5":{"label":"A-laget","title":"Division 5 södra","team":"Jarlabergs BTK","color":"green","needed":4,"homeDay":"tisdagar","players":["Mikael S","Stefan S","Stefan O","Gustav","Jesper","Magnus","Håkan"],"extras":["Annan spelare"],"matches":[["m01","2026-10-11","Boo RK D",false,"18:30","Boo KFUM:s rackethall, Mensättrav. 36, Saltsjö-Boo","Stefan Blomstrand"],["m02","2026-10-13","Norrtulls SK E",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m03","2026-10-23","Tyresö BTK C",false,"19:00","Skrubbahallen, Skrubba Allé, Tyresö","Jonas Strömsjö"],["m04","2026-11-10","Ingarö IF B",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m05","2026-11-22","Spårvägens BTK G",false,"19:00","Sporthallen, Tellusborgsvägen 22, Hägersten","Kansliet, 08-19 92 97"],["m06","2026-12-02","Tullinge TP BTK C",false,"19:00","Rikstenshallen, Flygarvägen 3, Tullinge","Peter Ottosson"],["m07","2026-12-08","Djurgårdens IF BTF",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m08","2027-01-12","Boo RK D",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m09","2027-01-24","Norrtulls SK E",false,"15:30","Vasa Real, Hälsingegatan 15, Stockholm","Caroline Johansson"],["m10","2027-02-02","Tyresö BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m11","2027-02-14","Ingarö IF B",false,"15:30","Ingarö sporthall ”Skeppet”, Eknäsvägen 2","Monica Lyander"],["m12","2027-02-23","Spårvägens BTK G",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m13","2027-03-16","Tullinge TP BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m14","2027-03-23","Djurgårdens IF BTF",false,"19:15","GIH-hallen, Lidingövägen 1, Stockholm","Tommi Riihonen"]]},"div7":{"label":"B-laget","title":"Division 7 MA","team":"Jarlabergs BTK B1","color":"red","needed":4,"homeDay":"torsdagar","players":["Anders","Fredrik","Niklas","Antonio","Martin","Jorge"],"extras":["A-lagsspelare","Annan spelare"],"matches":[["m01","2026-10-11","Djurgårdens IF BTF C2",false,"12:30","GIH-hallen, Lidingövägen 1, Stockholm","Tommi Riihonen"],["m02","2026-10-15","Hammarby IF BTF F3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m03","2026-10-20","IFK Lidingö BTK C",false,"19:30","Hersbyhallen, Läroverksvägen 17, Lidingö","Tony Arosell"],["m04","2026-11-12","Solna BTK D3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m05","2026-11-20","Spånga TBK C",false,"18:00","Spånga Tennis o Bordtennishall, Kronofogdev. 46–48, Spånga","Kenneth Karlsson"],["m06","2026-12-03","Ängby SK G1",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m07","2026-12-13","IFK Täby BTK D3",false,"18:00","Tibblehallen, Täby","Karen Chen"],["m08","2027-01-14","Djurgårdens IF BTF C2",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m09","2027-01-24","Hammarby IF BTF F3",false,"15:30","Farstahallen","Joel Keiler"],["m10","2027-02-04","IFK Lidingö BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m11","2027-02-12","Solna BTK D3",false,"19:15","Vasalundshallen, Badhusplan 3, Solna","Torbjörn Andersson"],["m12","2027-02-25","Spånga TBK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m13","2027-03-19","Ängby SK G1",false,"18:15","Ulvsunda idrottscentrum, Bryggerivägen, Bromma","Engla Palmgren"],["m14","2027-03-25","IFK Täby BTK D3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"]]}};
+const CACHE_KEY = "jbtk-cache-v2";
 let TEAMS = [];
 function buildTeams(cfg){
   TEAMS = Object.keys(cfg).map(k=>{
@@ -165,7 +176,7 @@ function shortName(o){ const hit=SHORT.find(([k])=>o.indexOf(k)!==-1); return hi
 function el(tag,cls,text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
 
 function renderTeam(t){
-  const col=el("section","col team-"+(t.color||"blue")); col.setAttribute("aria-label",t.label);
+  const col=el("section","col team-"+(t.color||"blue")); col.dataset.key=t.key; col.setAttribute("aria-label",t.label);
   const tod=today();
   const nxt=t.matches.find(m=>parseDate(m.date)>=tod);
   const head=el("div","colhead");
@@ -237,7 +248,21 @@ function renderTeam(t){
   return col;
 }
 
+let showTeam=null;
+try{ showTeam=localStorage.getItem("jbtk-team"); }catch(e){}
+function renderTabs(){
+  const box=$("#teamtabs"); box.textContent="";
+  if(!TEAMS.some(t=>t.key===showTeam)) showTeam=TEAMS.length?TEAMS[0].key:null;
+  TEAMS.forEach(t=>{
+    const b=el("button","t-"+(t.color||"blue"),t.label); b.type="button"; b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",String(t.key===showTeam));
+    b.onclick=()=>{ showTeam=t.key; try{localStorage.setItem("jbtk-team",showTeam);}catch(e){} render(); const y=$("#teamtabs").offsetTop; if(window.scrollY>y) window.scrollTo({top:y}); };
+    box.append(b);
+  });
+  if(showTeam) $("#cols").dataset.show=showTeam;
+}
 function render(){
+  renderTabs();
   const cols=$("#cols"); cols.textContent="";
   TEAMS.forEach(t=>{ answers[t.key]=answers[t.key]||{}; cols.append(renderTeam(t)); });
 }

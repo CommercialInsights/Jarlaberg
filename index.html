@@ -135,6 +135,9 @@ footer{max-width:1200px;margin:0 auto;padding:0 16px 40px;color:var(--muted);fon
 // Klistra in webbappens adress från Apps Script (slutar på /exec):
 const API = "https://script.google.com/macros/s/AKfycbwD2GNAHA6AYsk_37-vAFE5Srx42pwnCPgS4CMTaZkusY2Pv6cwTduSqZtgHm0ISeqJuw/exec";
 
+// Ögonblicksbild av lag och matcher så att schemat syns direkt. Backend (Code.gs) är det som gäller och skriver över detta.
+const SNAPSHOT = {"div5":{"label":"A-laget","title":"Division 5 södra","team":"Jarlabergs BTK","color":"green","needed":3,"homeDay":"tisdagar","players":["Mikael S","Stefan S","Stefan O","Gustav","Jesper","Magnus","Håkan"],"extras":["Annan spelare"],"matches":[["m01","2026-10-11","Boo RK D",false,"18:30","Boo KFUM:s rackethall, Mensättrav. 36, Saltsjö-Boo","Stefan Blomstrand"],["m02","2026-10-13","Norrtulls SK E",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m03","2026-10-23","Tyresö BTK C",false,"19:00","Skrubbahallen, Skrubba Allé, Tyresö","Jonas Strömsjö"],["m04","2026-11-10","Ingarö IF B",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m05","2026-11-22","Spårvägens BTK G",false,"19:00","Sporthallen, Tellusborgsvägen 22, Hägersten","Kansliet, 08-19 92 97"],["m06","2026-12-02","Tullinge TP BTK C",false,"19:00","Rikstenshallen, Flygarvägen 3, Tullinge","Peter Ottosson"],["m07","2026-12-08","Djurgårdens IF BTF",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m08","2027-01-12","Boo RK D",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m09","2027-01-24","Norrtulls SK E",false,"15:30","Vasa Real, Hälsingegatan 15, Stockholm","Caroline Johansson"],["m10","2027-02-02","Tyresö BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m11","2027-02-14","Ingarö IF B",false,"15:30","Ingarö sporthall ”Skeppet”, Eknäsvägen 2","Monica Lyander"],["m12","2027-02-23","Spårvägens BTK G",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m13","2027-03-16","Tullinge TP BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Stange"],["m14","2027-03-23","Djurgårdens IF BTF",false,"19:15","GIH-hallen, Lidingövägen 1, Stockholm","Tommi Riihonen"]]},"div7":{"label":"B-laget","title":"Division 7 MA","team":"Jarlabergs BTK B1","color":"red","needed":3,"homeDay":"torsdagar","players":["Anders","Fredrik","Niklas","Antonio","Martin","Jorge"],"extras":["A-lagsspelare","Annan spelare"],"matches":[["m01","2026-10-11","Djurgårdens IF BTF C2",false,"12:30","GIH-hallen, Lidingövägen 1, Stockholm","Tommi Riihonen"],["m02","2026-10-15","Hammarby IF BTF F3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m03","2026-10-20","IFK Lidingö BTK C",false,"19:30","Hersbyhallen, Läroverksvägen 17, Lidingö","Tony Arosell"],["m04","2026-11-12","Solna BTK D3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m05","2026-11-20","Spånga TBK C",false,"18:00","Spånga Tennis o Bordtennishall, Kronofogdev. 46–48, Spånga","Kenneth Karlsson"],["m06","2026-12-03","Ängby SK G1",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m07","2026-12-13","IFK Täby BTK D3",false,"18:00","Tibblehallen, Täby","Karen Chen"],["m08","2027-01-14","Djurgårdens IF BTF C2",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m09","2027-01-24","Hammarby IF BTF F3",false,"15:30","Farstahallen","Joel Keiler"],["m10","2027-02-04","IFK Lidingö BTK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m11","2027-02-12","Solna BTK D3",false,"19:15","Vasalundshallen, Badhusplan 3, Solna","Torbjörn Andersson"],["m12","2027-02-25","Spånga TBK C",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"],["m13","2027-03-19","Ängby SK G1",false,"18:15","Ulvsunda idrottscentrum, Bryggerivägen, Bromma","Engla Palmgren"],["m14","2027-03-25","IFK Täby BTK D3",true,"19:45","Nacka Sportcenter, Järlasalen, Griffelvägen 11, Nacka","Mikael Myhrberg"]]}};
+const CACHE_KEY = "jbtk-cache-v1";
 let TEAMS = [];
 function buildTeams(cfg){
   TEAMS = Object.keys(cfg).map(k=>{
@@ -267,15 +270,24 @@ function load(){
   api({}).then(res=>{
     if(saving) return;
     buildTeams(res.config); answers=res.answers;
-    const first=!loaded; loaded=true; if(first) setStatus("");
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify({config:res.config, answers:res.answers})); }catch(e){}
+    if(/Hämtar|Uppdaterar/.test($("#status").textContent)) setStatus("");
     render();
-  }).catch(()=>{ if(!loaded) setStatus("Kunde inte hämta schemat. Ladda om sidan.", true); });
+  }).catch(()=>{ if(/Hämtar|Uppdaterar/.test($("#status").textContent)) setStatus("Kunde inte hämta de senaste svaren. Försöker igen om en stund.", true); });
 }
 
 $("#showPast").checked=showPast;
 $("#showPast").onchange=e=>{ showPast=e.target.checked; try{localStorage.setItem("jbtk-past",showPast?"1":"0");}catch(err){} render(); };
 
-setStatus("Hämtar schemat …"); load();
+(function boot(){
+  let cached=null;
+  try{ cached=JSON.parse(localStorage.getItem(CACHE_KEY)||"null"); }catch(e){}
+  buildTeams(cached&&cached.config||SNAPSHOT);
+  answers=cached&&cached.answers||{};
+  loaded=true; render();
+  setStatus(cached?"Uppdaterar svar …":"Hämtar svar …");
+  load();
+})();
 setInterval(()=>{ if(!document.hidden) load(); }, 30000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) load(); });
 </script>

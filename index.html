@@ -239,21 +239,32 @@ function render(){
   TEAMS.forEach(t=>{ answers[t.key]=answers[t.key]||{}; cols.append(renderTeam(t)); });
 }
 
+async function api(opts){
+  let last;
+  for(let i=0;i<3;i++){
+    try{
+      const r=await fetch(API,opts);
+      const res=JSON.parse(await r.text());
+      if(!res.ok) throw new Error(res.error||"fel");
+      return res;
+    }catch(e){ last=e; if(/Okänd|Ogiltigt/.test(e.message)) break; await new Promise(s=>setTimeout(s,800*(i+1))); }
+  }
+  throw last;
+}
+
 function save(lag,p,mid,val){
   const mine=Object.assign({}, (answers[lag]||{})[p]||{});
   if(val) mine[mid]=val; else delete mine[mid];
   answers[lag]=Object.assign({}, answers[lag], {[p]:mine});
   render(); saving++; setStatus("Sparar …");
-  fetch(API,{method:"POST",body:JSON.stringify({lag:lag,spelare:p,match:mid,svar:val})})
-    .then(r=>r.json())
-    .then(res=>{ saving--; if(!res.ok) throw new Error(res.error); if(!saving){ answers=res.answers; render(); setStatus("Sparat."); } })
+  api({method:"POST",body:JSON.stringify({lag:lag,spelare:p,match:mid,svar:val})})
+    .then(res=>{ saving--; if(!saving){ answers=res.answers; render(); setStatus("Sparat."); } })
     .catch(()=>{ setStatus("Svaret kunde inte sparas. Ladda om sidan och försök igen.", true); saving=0; load(); });
 }
 
 function load(){
   if(!/^https:\/\/script\.google\.com\//.test(API)){ setStatus("Sidan är inte kopplad till Apps Script än. Klistra in /exec-länken i API överst i skriptet.", true); return; }
-  fetch(API).then(r=>r.json()).then(res=>{
-    if(!res.ok) throw new Error(res.error);
+  api({}).then(res=>{
     if(saving) return;
     buildTeams(res.config); answers=res.answers;
     const first=!loaded; loaded=true; if(first) setStatus("");

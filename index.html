@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jarlabergs BTK – Vem spelar?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2213%22 fill=%22%23ff8a1f%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --table:#16486e;--table-2:#1f5f8f;--ball:#ff8a1f;--bg:#eef3f7;--paper:#fff;--ink:#10222f;--muted:#5b6f7e;
+  --rule:#d5e0e8;--yes:#1c8a4f;--yes-bg:#dcf2e5;--no:#c2362b;--no-bg:#fbe1de;--none:#b7c4ce;--focus:#ff8a1f;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{--table:#0f3552;--table-2:#154a72;--bg:#0b1822;--paper:#12222f;--ink:#e6eef4;--muted:#93a7b6;
+  --rule:#223848;--yes:#4cc584;--yes-bg:#123526;--no:#f07a6f;--no-bg:#3a1916;--none:#3d5264;color-scheme:dark}
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 "Barlow",system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+.hero{background:var(--table);color:#fff;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:14px;border:3px solid rgba(255,255,255,.85);pointer-events:none}
+.hero::after{content:"";position:absolute;top:14px;bottom:14px;left:50%;width:2px;background:rgba(255,255,255,.55);pointer-events:none}
+.hero-in{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:44px 32px 44px}
+.club{font:700 1.05rem/1 "Barlow Condensed",sans-serif;letter-spacing:.02em;opacity:.9;margin:0 0 10px}
+h1{font:800 clamp(3rem,9vw,5.4rem)/.9 "Barlow Condensed",sans-serif;margin:0}
+.ball{display:inline-block;width:.36em;height:.36em;border-radius:50%;background:var(--ball);vertical-align:.08em;margin-left:.08em}
+.sub{margin:14px 0 0;max-width:38em;opacity:.92}
+
+main{max-width:1200px;margin:0 auto;padding:20px 16px 64px}
+.who{background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:18px;margin:-24px 0 22px;position:relative;z-index:2}
+.who h2{font:700 1.35rem/1.1 "Barlow Condensed",sans-serif;margin:0 0 4px}
+.who p{margin:0 0 14px;color:var(--muted);font-size:.95rem}
+.players{display:flex;flex-wrap:wrap;gap:8px}
+.pchip{border:2px solid var(--rule);background:transparent;border-radius:999px;padding:7px 14px;cursor:pointer;font-weight:600;display:flex;gap:6px;align-items:center}
+.pchip small{font-weight:600;font-size:.7rem;padding:1px 6px;border-radius:4px;background:var(--bg);color:var(--muted)}
+.pchip[aria-pressed="true"]{background:var(--table-2);border-color:var(--table-2);color:#fff}
+.pchip[aria-pressed="true"] small{background:rgba(255,255,255,.2);color:#fff}
+.status{font-size:.9rem;color:var(--muted);margin:0 0 10px;min-height:1.4em}
+.status.warn{color:var(--no)}
+.tools{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin:0 0 16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.85rem;color:var(--muted)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted);cursor:pointer}
+
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media (max-width:860px){.cols{grid-template-columns:1fr}}
+.team-green{--table:#1d6b3f;--table-2:#2a8a52}
+.team-red{--table:#9b2a22;--table-2:#bf3a2f}
+@media (prefers-color-scheme:dark){.team-green{--table:#17512f;--table-2:#22723f}.team-red{--table:#6e1f19;--table-2:#93302a}}
+.colhead{background:var(--table);color:#fff;border-radius:10px;padding:14px 16px;margin:0 0 12px;position:sticky;top:0;z-index:3}
+.colhead h2{font:800 1.7rem/1 "Barlow Condensed",sans-serif;margin:0}
+.colhead p{margin:4px 0 0;font-size:.88rem;opacity:.88}
+.colhead .nxt{margin-top:8px;font-size:.88rem;background:rgba(0,0,0,.22);padding:6px 10px;border-radius:6px}
+.colhead .nxt b{font-family:"Barlow Condensed",sans-serif;font-size:1.05rem}
+
+ol.matches{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.m{background:var(--paper);border:1px solid var(--rule);border-radius:10px;display:grid;grid-template-columns:70px 1fr;overflow:hidden}
+.m.past{opacity:.55}
+.m.is-next{border-color:var(--ball);box-shadow:0 0 0 2px var(--ball)}
+.date{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 4px;background:var(--table);color:#fff;text-align:center}
+.m.away .date{background:transparent;color:var(--ink);border-right:3px solid var(--table-2)}
+.date .wd{font-size:.8rem;opacity:.85}
+.date .d{font:800 1.9rem/1 "Barlow Condensed",sans-serif}
+.date .mo{font:700 .95rem/1 "Barlow Condensed",sans-serif}
+.date .tm{font:700 .9rem/1 "Barlow Condensed",sans-serif;margin-top:6px;padding-top:6px;border-top:1px solid currentColor}
+.body{padding:12px 14px;min-width:0}
+.top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.vs{font:700 1.2rem/1.15 "Barlow Condensed",sans-serif;margin:0}
+.vs .ha{font:500 .85rem/1.2 "Barlow",sans-serif;color:var(--muted);display:block;margin-top:3px}
+.count{font:700 1rem/1 "Barlow Condensed",sans-serif;white-space:nowrap;padding:5px 9px;border-radius:5px;background:var(--bg)}
+.count.ok{background:var(--yes-bg);color:var(--yes)}
+.count.low{background:var(--no-bg);color:var(--no)}
+.meta{margin:6px 0 0;font-size:.85rem;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.meta a{color:inherit;text-decoration:underline;text-decoration-color:var(--rule);text-underline-offset:2px}
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0;list-style:none}
+.dot{font:inherit;cursor:pointer;background:transparent;min-height:32px;display:inline-flex;align-items:center;gap:5px;font-size:.78rem;padding:2px 8px 2px 5px;border-radius:999px;border:1px solid var(--rule);color:var(--muted)}
+.dot i{width:9px;height:9px;border-radius:50%;background:var(--none);flex:none}
+.dot.yes{border-color:transparent;background:var(--yes-bg);color:var(--yes)} .dot.yes i{background:var(--yes)}
+.dot.no{border-color:transparent;background:var(--no-bg);color:var(--no)} .dot.no i{background:var(--no)}
+.dot:disabled{cursor:default}
+.lineup{margin-top:12px;border:1px solid var(--rule);border-radius:8px;background:var(--bg)}
+.lineup summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px;padding:9px 12px;font-weight:600;min-height:40px;align-items:center}
+.lineup summary::-webkit-details-marker{display:none}
+.lineup summary::before{content:"▸";margin-right:8px;color:var(--table-2);transition:transform .15s}
+.lineup[open] summary::before{transform:rotate(90deg)}
+.lineup summary>span:first-child{margin-right:auto}
+.lu-state{font-weight:500;font-size:.85rem;color:var(--muted)}
+.lineup.set .lu-state{color:var(--table-2);font-weight:700}
+.lu-list{margin:0;padding:0 12px 6px 34px;font-weight:600}
+.lu-res{margin:0;padding:0 12px 10px 14px;font-size:.88rem;color:var(--muted)}
+.dot.extra{border-style:dashed;font-style:italic}
+.dot.saving{opacity:.6}
+.mine{display:flex;gap:8px;margin-top:12px}
+.mine button{flex:1;border:2px solid var(--rule);background:transparent;border-radius:7px;padding:9px 6px;font-weight:600;cursor:pointer;min-height:44px}
+.mine button.y[aria-pressed="true"]{background:var(--yes);border-color:var(--yes);color:#fff}
+.mine button.n[aria-pressed="true"]{background:var(--no);border-color:var(--no);color:#fff}
+.mine button:disabled{cursor:not-allowed;opacity:.5}
+.hint{margin:10px 0 0;font-size:.85rem;color:var(--muted)}
+footer{max-width:1200px;margin:0 auto;padding:0 16px 40px;color:var(--muted);font-size:.85rem}
+@media (max-width:480px){.hero-in{padding:38px 26px 40px}.m{grid-template-columns:60px 1fr}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero-in">
+    <p class="club">Jarlabergs BTK, säsong 2026/27</p>
+    <h1>Vem spelar<span class="ball" aria-hidden="true"></span></h1>
+    <p class="sub">A-laget i grönt och B-laget i rött, sida vid sida. Tryck på ditt namn under en match: en gång för grönt (kan), två gånger för rött (kan inte), tre gånger för att ta bort svaret.</p>
+  </div>
+</header>
+
+<main>
+  <p class="status" id="status" role="status"></p>
+
+  <div class="tools">
+    <div class="legend">
+      <span><span class="dot yes"><i></i>Kan</span></span>
+      <span><span class="dot no"><i></i>Kan inte</span></span>
+      <span><span class="dot"><i></i>Inte svarat</span></span>
+      <span>Mörkt datum = hemma, ljust = borta</span>
+    </div>
+    <label class="toggle"><input type="checkbox" id="showPast"> Visa spelade matcher</label>
+  </div>
+
+  <div class="cols" id="cols"></div>
+</main>
+<footer>Tider, hallar och ansvariga kommer från serieindelningen 17 sept 2026.</footer>
+
+<script>
+// Klistra in webbappens adress från Apps Script (slutar på /exec):
+const API = "https://script.google.com/macros/s/AKfycbwD2GNAHA6AYsk_37-vAFE5Srx42pwnCPgS4CMTaZkusY2Pv6cwTduSqZtgHm0ISeqJuw/exec";
+
+let TEAMS = [];
+function buildTeams(cfg){
+  TEAMS = Object.keys(cfg).map(k=>{
+    const c=cfg[k];
+    return {key:k, label:c.label, title:c.title, team:c.team, needed:c.needed, homeDay:c.homeDay, players:c.players, extras:c.extras||[], color:c.color,
+      matches:c.matches.map(([id,date,opp,isHome,time,hall,resp])=>({id,date,opp,isHome,time,hall,resp}))};
+  });
+}
+const WD=["sön","mån","tis","ons","tor","fre","lör"];
+const MO=["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec"];
+const WDL=["söndag","måndag","tisdag","onsdag","torsdag","fredag","lördag"];
+const $=s=>document.querySelector(s);
+
+let answers={};
+const openLineups={};
+let showPast=false, saving=0, loaded=false;
+try{ showPast=localStorage.getItem("jbtk-past")==="1"; }catch(e){}
+
+function parseDate(s){ const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d); }
+function today(){ const t=new Date(); return new Date(t.getFullYear(),t.getMonth(),t.getDate()); }
+function setStatus(msg,warn){ const el=$("#status"); el.textContent=msg||""; el.classList.toggle("warn",!!warn); }
+const SHORT=[["Djurgården","Djurgården"],["Norrtull","Norrtull"],["Spårvägen","Spårvägen"],["Boo","Boo"],["Tyresö","Tyresö"],["Ingarö","Ingarö"],["Tullinge","Tullinge"],
+  ["Hammarby","Hammarby"],["Lidingö","Lidingö"],["Solna","Solna"],["Spånga","Spånga"],["Ängby","Ängby"],["Täby","Täby"]];
+function shortName(o){ const hit=SHORT.find(([k])=>o.indexOf(k)!==-1); return hit?hit[1]:o; }
+function el(tag,cls,text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+
+function renderTeam(t){
+  const col=el("section","col team-"+(t.color||"blue")); col.setAttribute("aria-label",t.label);
+  const tod=today();
+  const nxt=t.matches.find(m=>parseDate(m.date)>=tod);
+  const head=el("div","colhead");
+  head.append(el("h2",null,t.label), el("p",null,t.team+", "+t.title+". Hemma på "+t.homeDay+"."));
+  if(nxt){
+    const d=parseDate(nxt.date), days=Math.round((d-tod)/864e5);
+    const when= days===0?"I dag":days===1?"I morgon":"Om "+days+" dagar";
+    const n=el("div","nxt"); n.append(when+": ");
+    n.append(el("b",null,(nxt.isHome?"hemma mot ":"borta mot ")+nxt.opp+", "+WDL[d.getDay()]+" "+d.getDate()+" "+MO[d.getMonth()]+(nxt.time?" kl "+nxt.time:"")));
+    head.append(n);
+  }
+  col.append(head);
+
+  const ol=el("ol","matches");
+  const ans=answers[t.key]||{};
+  t.matches.forEach(m=>{
+    const d=parseDate(m.date), past=d<tod;
+    if(past && !showPast) return;
+    const yes=t.players.concat(t.extras).filter(p=>(ans[p]||{})[m.id]==="ja").length;
+    const answered=t.players.filter(p=>(ans[p]||{})[m.id]).length;
+    let cls="count"; if(yes>=t.needed) cls+=" ok"; else if((t.players.length-answered)+yes<t.needed) cls+=" low";
+
+    const li=el("li","m "+(m.isHome?"home":"away")+(past?" past":"")+(nxt&&nxt.id===m.id?" is-next":""));
+    const dt=el("div","date");
+    dt.append(el("span","wd",WD[d.getDay()]), el("span","d",String(d.getDate())), el("span","mo",MO[d.getMonth()]+(d.getFullYear()!==2026?" -27":"")));
+    if(m.time) dt.append(el("span","tm",m.time));
+    const body=el("div","body");
+    const top=el("div","top");
+    const vs=el("p","vs"); vs.append(el("span",null,(m.isHome?"Hemmamatch: ":"Bortamatch: ")+shortName(m.opp)), el("span","ha",m.opp));
+    top.append(vs, el("span",cls,yes+" av "+t.needed+" klara"));
+    body.append(top);
+    const meta=el("p","meta");
+    if(m.hall){ const a=el("a",null,m.hall); a.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(m.hall); a.target="_blank"; a.rel="noopener"; meta.append(a); }
+    if(m.resp) meta.append(el("span",null,"Ansvarig: "+m.resp));
+    body.append(meta);
+    const dots=el("ul","dots");
+    t.players.concat(t.extras).forEach(p=>{
+      const v=(ans[p]||{})[m.id];
+      const li2=el("li");
+      const b=el("button","dot"+(t.extras.indexOf(p)!==-1?" extra":"")+(v==="ja"?" yes":v==="nej"?" no":""));
+      b.type="button"; b.append(el("i")); b.append(p);
+      const st=v==="ja"?"kan":v==="nej"?"kan inte":"inte svarat";
+      b.title=p+": "+st+(past?"":". Tryck för att ändra.");
+      b.setAttribute("aria-label",p+", "+st);
+      b.disabled=past||!loaded;
+      b.onclick=()=>save(t.key,p,m.id, v==="ja"?"nej":v==="nej"?"":"ja");
+      li2.append(b); dots.append(li2);
+    });
+    body.append(dots);
+    const lu=((answers._uttag||{})[t.key]||{})[m.id];
+    const det=el("details","lineup"+(lu?" set":""));
+    const sum=el("summary");
+    sum.append(el("span",null,"Uttaget lag"), el("span","lu-state",lu?(lu.spelare.length+" spelare"+(lu.reserv?" + reserv":"")):"Inte uttaget än"));
+    det.append(sum);
+    if(lu){
+      const ul=el("ol","lu-list");
+      lu.spelare.forEach(p=>ul.append(el("li",null,p)));
+      det.append(ul);
+      if(lu.reserv) det.append(el("p","lu-res","Reserv: "+lu.reserv));
+    } else det.append(el("p","lu-res","Mikael tar ut laget när svaren är inne."));
+    if(openLineups[t.key+m.id]) det.open=true;
+    det.addEventListener("toggle",()=>{ openLineups[t.key+m.id]=det.open; });
+    body.append(det);
+    li.append(dt, body);
+    ol.append(li);
+  });
+  if(!ol.children.length) ol.append(el("li","hint","Alla matcher är spelade."));
+  col.append(ol);
+  return col;
+}
+
+function render(){
+  const cols=$("#cols"); cols.textContent="";
+  TEAMS.forEach(t=>{ answers[t.key]=answers[t.key]||{}; cols.append(renderTeam(t)); });
+}
+
+function save(lag,p,mid,val){
+  const mine=Object.assign({}, (answers[lag]||{})[p]||{});
+  if(val) mine[mid]=val; else delete mine[mid];
+  answers[lag]=Object.assign({}, answers[lag], {[p]:mine});
+  render(); saving++; setStatus("Sparar …");
+  fetch(API,{method:"POST",body:JSON.stringify({lag:lag,spelare:p,match:mid,svar:val})})
+    .then(r=>r.json())
+    .then(res=>{ saving--; if(!res.ok) throw new Error(res.error); if(!saving){ answers=res.answers; render(); setStatus("Sparat."); } })
+    .catch(()=>{ setStatus("Svaret kunde inte sparas. Ladda om sidan och försök igen.", true); saving=0; load(); });
+}
+
+function load(){
+  if(!/^https:\/\/script\.google\.com\//.test(API)){ setStatus("Sidan är inte kopplad till Apps Script än. Klistra in /exec-länken i API överst i skriptet.", true); return; }
+  fetch(API).then(r=>r.json()).then(res=>{
+    if(!res.ok) throw new Error(res.error);
+    if(saving) return;
+    buildTeams(res.config); answers=res.answers;
+    const first=!loaded; loaded=true; if(first) setStatus("");
+    render();
+  }).catch(()=>{ if(!loaded) setStatus("Kunde inte hämta schemat. Ladda om sidan.", true); });
+}
+
+$("#showPast").checked=showPast;
+$("#showPast").onchange=e=>{ showPast=e.target.checked; try{localStorage.setItem("jbtk-past",showPast?"1":"0");}catch(err){} render(); };
+
+setStatus("Hämtar schemat …"); load();
+setInterval(()=>{ if(!document.hidden) load(); }, 30000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) load(); });
+</script>
+</body>
+</html>
